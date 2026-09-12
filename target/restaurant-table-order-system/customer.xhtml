@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core">
+<h:head>
+    <title>Customer CRUD</title>
+    <h:outputStylesheet library="css" name="style.css"/>
+    <style>
+        .form-title { margin-bottom: 20px; }
+    </style>
+</h:head>
+<h:body>
+<div class="container">
+    <h1 class="form-title">Customer Management</h1>
+
+    <h:form>
+        <h:messages styleClass="messages"/>
+
+        <h:panelGrid columns="2" styleClass="form-grid">
+            <h:outputLabel for="firstName" value="First Name:"/>
+            <h:inputText id="firstName" value="#{customerBean.customer.firstName}"
+                         required="true" requiredMessage="First name is required."/>
+
+            <h:outputLabel for="lastName" value="Last Name:"/>
+            <h:inputText id="lastName" value="#{customerBean.customer.lastName}"
+                         required="true" requiredMessage="Last name is required."/>
+
+            <h:outputLabel for="phone" value="Phone:"/>
+            <h:inputText id="phone" value="#{customerBean.customer.phone}"
+                         required="true" requiredMessage="Phone is required."
+                         validatorMessage="Phone must be 10 digits starting with 07.">
+                <f:validateRegex pattern="^07[0-9]{8}$"/>
+            </h:inputText>
+
+            <h:outputLabel for="email" value="Email:"/>
+            <h:inputText id="email" value="#{customerBean.customer.email}"
+                         required="true" requiredMessage="Email is required."
+                         validatorMessage="Enter a valid email address.">
+                <f:validateRegex pattern="^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"/>
+            </h:inputText>
+        </h:panelGrid>
+
+        <h:commandButton value="Save" action="#{customerBean.save}"
+                         style="background:#198754;color:white;padding:10px 20px;"/>
+        <h:commandButton value="Update" action="#{customerBean.update}" styleClass="button"/>
+        <h:commandButton value="Clear" action="#{customerBean.cancel}" immediate="true" styleClass="button"/>
+
+        <h2>Customers</h2>
+        <h:dataTable value="#{customerBean.customers}" var="c" styleClass="data-table">
+            <h:column><f:facet name="header">ID</f:facet>#{c.id}</h:column>
+            <h:column><f:facet name="header">First Name</f:facet>#{c.firstName}</h:column>
+            <h:column><f:facet name="header">Last Name</f:facet>#{c.lastName}</h:column>
+            <h:column><f:facet name="header">Phone</f:facet>#{c.phone}</h:column>
+            <h:column><f:facet name="header">Email</f:facet>#{c.email}</h:column>
+            <h:column>
+                <f:facet name="header">Actions</f:facet>
+                <h:commandButton value="Edit" action="#{customerBean.edit(c)}" styleClass="button"/>
+                <h:commandButton value="Delete" action="#{customerBean.delete(c)}"
+                                 style="background:#dc3545;color:white;padding:6px;"/>
+            </h:column>
+        </h:dataTable>
+    </h:form>
+    <p><h:link outcome="index" value="Home"/></p>
+</div>
+</h:body>
+</html>

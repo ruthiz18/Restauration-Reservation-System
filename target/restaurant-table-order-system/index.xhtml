@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html">
+<h:head>
+    <title>Restaurant System</title>
+    <h:outputStylesheet library="css" name="style.css"/>
+    <style>
+        .welcome { text-align: center; margin: 40px; }
+        .welcome h1 { font-size: 32px; }
+    </style>
+</h:head>
+<h:body>
+    <div class="welcome">
+        <h1 style="color: #8B4513;">Restaurant Table &amp; Order System</h1>
+        <p>Phase 1 CRUD: Customer and Menu Item</p>
+        <h:link outcome="customer" value="Customer CRUD" styleClass="button"/>
+        <h:link outcome="menu-item" value="Menu Item CRUD" styleClass="button"/>
+    </div>
+</h:body>
+</html>

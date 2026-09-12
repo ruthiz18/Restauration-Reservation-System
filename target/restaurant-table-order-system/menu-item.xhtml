@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core">
+<h:head>
+    <title>Menu Item CRUD</title>
+    <h:outputStylesheet library="css" name="style.css"/>
+    <style>
+        .form-title { margin-bottom: 20px; }
+    </style>
+</h:head>
+<h:body>
+<div class="container">
+    <h1 class="form-title">Menu Item Management</h1>
+
+    <h:form>
+        <h:messages styleClass="messages"/>
+
+        <h:panelGrid columns="2" styleClass="form-grid">
+            <h:outputLabel for="name" value="Name:"/>
+            <h:inputText id="name" value="#{menuItemBean.menuItem.name}"
+                         required="true" requiredMessage="Name is required."/>
+
+            <h:outputLabel for="description" value="Description:"/>
+            <h:inputTextarea id="description" value="#{menuItemBean.menuItem.description}"/>
+
+            <h:outputLabel for="price" value="Price:"/>
+            <h:inputText id="price" value="#{menuItemBean.menuItem.price}"
+                         required="true" requiredMessage="Price is required."
+                         converterMessage="Price must be a number."
+                         validatorMessage="Price must be greater than 0.">
+                <f:validateDoubleRange minimum="0.01"/>
+            </h:inputText>
+
+            <h:outputLabel for="category" value="Category:"/>
+            <h:inputText id="category" value="#{menuItemBean.menuItem.category}"
+                         required="true" requiredMessage="Category is required."/>
+
+            <h:outputLabel for="available" value="Available:"/>
+            <h:selectBooleanCheckbox id="available" value="#{menuItemBean.menuItem.available}"/>
+        </h:panelGrid>
+
+        <h:commandButton value="Save" action="#{menuItemBean.save}"
+                         style="background:#198754;color:white;padding:10px 20px;"/>
+        <h:commandButton value="Update" action="#{menuItemBean.update}" styleClass="button"/>
+        <h:commandButton value="Clear" action="#{menuItemBean.cancel}" immediate="true" styleClass="button"/>
+
+        <h2>Menu Items</h2>
+        <h:dataTable value="#{menuItemBean.menuItems}" var="m" styleClass="data-table">
+            <h:column><f:facet name="header">ID</f:facet>#{m.id}</h:column>
+            <h:column><f:facet name="header">Name</f:facet>#{m.name}</h:column>
+            <h:column><f:facet name="header">Description</f:facet>#{m.description}</h:column>
+            <h:column><f:facet name="header">Price</f:facet>#{m.price}</h:column>
+            <h:column><f:facet name="header">Category</f:facet>#{m.category}</h:column>
+            <h:column><f:facet name="header">Available</f:facet>#{m.available}</h:column>
+            <h:column>
+                <f:facet name="header">Actions</f:facet>
+                <h:commandButton value="Edit" action="#{menuItemBean.edit(m)}" styleClass="button"/>
+                <h:commandButton value="Delete" action="#{menuItemBean.delete(m)}"
+                                 style="background:#dc3545;color:white;padding:6px;"/>
+            </h:column>
+        </h:dataTable>
+    </h:form>
+    <p><h:link outcome="index" value="Home"/></p>
+</div>
+</h:body>
+</html>
