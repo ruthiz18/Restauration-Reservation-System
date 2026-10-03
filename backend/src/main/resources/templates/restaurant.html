@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head(${restaurant.name})}"></head>
+<body>
+<header th:replace="~{fragments :: header(${frontendUrl})}"></header>
+
+<main class="wrap">
+    <section class="hero hero-scene"
+             th:style="|background-image:linear-gradient(90deg,rgba(8,6,5,.78),rgba(8,6,5,.25)),url(/img/${@themes.key(restaurant.cuisine)}.jpg),url(/img/${@themes.key(restaurant.cuisine)}.svg)|">
+        <p><a th:href="@{/}">&larr; All restaurants</a></p>
+        <h1 th:text="${restaurant.name}">Restaurant</h1>
+        <p>
+            <span class="tag" th:text="${restaurant.cuisine}">Cuisine</span>
+            <span th:if="${rating.count() > 0}" class="muted">
+                &#9733; <span th:text="${rating.average()}">4.5</span>
+                (<span th:text="${rating.count()}">3</span> reviews)
+            </span>
+            <span th:if="${rating.count() == 0}" class="muted">No reviews yet</span>
+        </p>
+        <p th:text="${restaurant.description}">Description</p>
+        <p class="muted-on-scene">
+            <span th:text="${restaurant.address}">Address</span>
+            <span th:if="${restaurant.phone != null}"> &middot; <span th:text="${restaurant.phone}">Phone</span></span><br>
+            Open <span th:text="${#temporals.format(restaurant.openTime, 'HH:mm')}">11:00</span>
+            &ndash; <span th:text="${#temporals.format(restaurant.closeTime, 'HH:mm')}">22:00</span>
+        </p>
+        <a class="btn" th:href="${frontendUrl} + '/restaurants/' + ${restaurant.id}">Reserve a table</a>
+    </section>
+
+    <section>
+        <h2>Menu</h2>
+        <p class="muted" th:if="${menu == null or #lists.isEmpty(menu.sections)}">The menu has not been published yet.</p>
+        <div class="card menu-section" th:each="section : ${menu != null ? menu.sections : {}}">
+            <h3 th:text="${section.name}">Section</h3>
+            <div class="menu-item" th:each="item : ${section.items}">
+                <div>
+                    <strong th:text="${item.name}">Dish</strong>
+                    <span class="tag" th:if="${item.vegetarian}">vegetarian</span>
+                    <span class="tag" th:each="t : ${item.tags}" th:text="${t}">tag</span>
+                    <div class="muted" th:if="${item.description != null}" th:text="${item.description}">Description</div>
+                </div>
+                <div th:text="${#numbers.formatDecimal(item.price, 1, 2)}">9.00</div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

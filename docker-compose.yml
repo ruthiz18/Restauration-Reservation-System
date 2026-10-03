@@ -1,0 +1,148 @@
+# Reservo - local infrastructure (and optionally the whole stack).
+#
+#   docker compose up -d                    -> databases, broker, admin tools only (run the app from IntelliJ)
+#   docker compose --profile full up --build -> also builds and runs the backend + frontend containers
+#
+# Defaults match backend/src/main/resources/application.yml, so IntelliJ needs no extra env vars.
+
+name: reservo
+
+services:
+  # ---------- PostgreSQL: users, restaurants, tables, reservations ----------
+  postgres:
+    image: postgres:16-alpine
+    container_name: reservo-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-reservo}
+      POSTGRES_USER: ${POSTGRES_USER:-reservo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-reservo}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"   # 5433 on the host: avoids clashing with a local PostgreSQL on 5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ---------- pgAdmin: web UI for PostgreSQL ----------
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: reservo-pgadmin
+    environment:
+      # pgAdmin rejects reserved domains such as ".local" - use a normal-looking address.
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: "True"
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ---------- MongoDB: menus, reviews, notification audit log ----------
+  mongo:
+    image: mongo:7
+    container_name: reservo-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ---------- mongo-express: web UI for MongoDB (dev only: no auth) ----------
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: reservo-mongo-express
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017/
+      ME_CONFIG_BASICAUTH: "false"
+    ports:
+      - "8081:8081"
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  # ---------- RabbitMQ: message broker for email / SMS events ----------
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: reservo-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBIT_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD:-guest}
+    ports:
+      - "5672:5672"     # AMQP
+      - "15672:15672"   # management UI
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  # ---------- Mailpit: catches outgoing email so you can see the Thymeleaf templates ----------
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: reservo-mailpit
+    ports:
+      - "1025:1025"     # SMTP
+      - "8025:8025"     # web inbox
+
+  # ======================= full-stack profile =======================
+  backend:
+    profiles: ["full"]
+    build: ./backend
+    container_name: reservo-backend
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-reservo}
+      DB_USER: ${POSTGRES_USER:-reservo}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-reservo}
+      MONGO_URI: mongodb://mongo:27017/reservo
+      RABBIT_HOST: rabbitmq
+      RABBIT_USER: ${RABBIT_USER:-guest}
+      RABBIT_PASSWORD: ${RABBIT_PASSWORD:-guest}
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+      EMAIL_ENABLED: "true"
+      JWT_SECRET: ${JWT_SECRET:-change-me-change-me-change-me-change-me-change-me-1234}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-not-configured}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-not-configured}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@reservo.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@123}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  web:
+    profiles: ["full"]
+    build:
+      context: ./frontend
+      args:
+        VITE_BACKEND_URL: http://localhost:8080
+    container_name: reservo-web
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  pgadmin:
+  mongodata:
+  rabbitmq:

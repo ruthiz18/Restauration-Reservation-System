@@ -1,0 +1,86 @@
+### Reservo API requests for IntelliJ's built-in HTTP Client (open this file, click the green arrow next to a request).
+### Pick the "dev" environment in the top-right dropdown. The tokens are stored automatically by the login requests.
+
+### 1. Log in as the seeded customer  (stores {{customerToken}})
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "customer@reservo.local", "password": "Customer@123" }
+
+> {% client.global.set("customerToken", response.body.token); %}
+
+### 2. Log in as staff  (stores {{staffToken}})
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "staff@reservo.local", "password": "Staff@123" }
+
+> {% client.global.set("staffToken", response.body.token); %}
+
+### 3. Log in as admin  (stores {{adminToken}})
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "admin@reservo.local", "password": "Admin@123" }
+
+> {% client.global.set("adminToken", response.body.token); %}
+
+### 4. Register a new customer
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{ "fullName": "Test User", "email": "test.user@example.com", "phone": "+250788123456", "password": "Password123" }
+
+### 5. Who am I?
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{customerToken}}
+
+### 6. Browse restaurants (public)
+GET {{baseUrl}}/api/restaurants?q=&page=0&size=12
+
+### 7. Restaurant menu (MongoDB document, public)
+GET {{baseUrl}}/api/restaurants/1/menu
+
+### 8. Availability for a date (change the date to a future day)
+GET {{baseUrl}}/api/restaurants/1/availability?date=2030-01-15&partySize=2
+
+### 9. Book a table (customer) - change the date to a future day
+POST {{baseUrl}}/api/reservations
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{ "restaurantId": 1, "date": "2030-01-15", "time": "19:00", "partySize": 2, "specialRequests": "Window seat" }
+
+### 10. My reservations
+GET {{baseUrl}}/api/reservations/mine
+Authorization: Bearer {{customerToken}}
+
+### 11. Staff: all reservations
+GET {{baseUrl}}/api/reservations?page=0&size=20
+Authorization: Bearer {{staffToken}}
+
+### 12. Staff: confirm reservation 1  (triggers RabbitMQ -> email + SMS)
+PATCH {{baseUrl}}/api/reservations/1/status
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+
+{ "status": "CONFIRMED" }
+
+### 13. Staff: today's stats
+GET {{baseUrl}}/api/stats
+Authorization: Bearer {{staffToken}}
+
+### 14. RBAC check - a customer must get 403 here
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{customerToken}}
+
+### 15. Admin: list users
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{adminToken}}
+
+### 16. Admin: RabbitMQ notification audit log (MongoDB)
+GET {{baseUrl}}/api/notifications
+Authorization: Bearer {{adminToken}}
+
+### 17. Health check
+GET {{baseUrl}}/actuator/health

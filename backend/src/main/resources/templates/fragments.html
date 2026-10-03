@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' | Reservo'">Reservo</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}">
+</head>
+<body>
+<header class="site" th:fragment="header(frontendUrl)">
+    <div class="wrap">
+        <a class="logo" th:href="@{/}">Reservo</a>
+        <nav>
+            <a class="btn" th:href="${frontendUrl} + '/login'">Sign in / Book a table</a>
+        </nav>
+    </div>
+</header>
+<footer class="site" th:fragment="footer">
+    <div class="wrap">Reservo &mdash; restaurant reservations made simple.</div>
+</footer>
+</body>
+</html>

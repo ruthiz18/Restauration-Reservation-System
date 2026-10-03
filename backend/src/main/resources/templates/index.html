@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Find a restaurant')}"></head>
+<body>
+<header th:replace="~{fragments :: header(${frontendUrl})}"></header>
+
+<main class="wrap">
+    <section class="hero">
+        <h1>Find your next table</h1>
+        <p>Browse restaurants, read menus and reserve in seconds.</p>
+        <form class="search" th:action="@{/}" method="get">
+            <input type="search" name="q" th:value="${q}" placeholder="Search by name or cuisine" aria-label="Search restaurants">
+            <button class="btn" type="submit">Search</button>
+        </form>
+    </section>
+
+    <p class="muted" th:if="${#lists.isEmpty(restaurants)}">No restaurants match your search.</p>
+
+    <section class="grid">
+        <article class="card card-photo" th:each="r : ${restaurants}">
+            <div class="thumb" th:style="|background-image:url(/img/${@themes.key(r.cuisine)}.jpg),url(/img/${@themes.key(r.cuisine)}.svg)|"></div>
+            <h3><a th:href="@{/restaurants/{id}(id=${r.id})}" th:text="${r.name}">Restaurant</a></h3>
+            <span class="tag" th:text="${r.cuisine}">Cuisine</span>
+            <p th:text="${r.description}">Description</p>
+            <p class="muted">
+                <span th:text="${r.address}">Address</span><br>
+                Open <span th:text="${#temporals.format(r.openTime, 'HH:mm')}">11:00</span>
+                &ndash; <span th:text="${#temporals.format(r.closeTime, 'HH:mm')}">22:00</span>
+            </p>
+            <a class="btn" th:href="${frontendUrl} + '/restaurants/' + ${r.id}">Reserve</a>
+        </article>
+    </section>
+
+    <nav class="pager" th:if="${hasPrev or hasNext}">
+        <a th:if="${hasPrev}" th:href="@{/(q=${q},page=${page - 1})}">&larr; Previous</a>
+        <span th:unless="${hasPrev}"></span>
+        <a th:if="${hasNext}" th:href="@{/(q=${q},page=${page + 1})}">Next &rarr;</a>
+    </nav>
+</main>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

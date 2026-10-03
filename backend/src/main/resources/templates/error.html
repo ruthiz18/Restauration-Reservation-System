@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Page not found')}"></head>
+<body>
+<main class="wrap hero">
+    <h1 th:text="${status == 404} ? 'Page not found' : 'Something went wrong'">Page not found</h1>
+    <p class="muted">We could not find what you were looking for.</p>
+    <a class="btn" th:href="@{/}">Back to restaurants</a>
+</main>
+</body>
+</html>

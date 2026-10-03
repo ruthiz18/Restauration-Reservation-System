@@ -1,7 +1,20 @@
+# build output
 target/
-*.class
-*.log
-.idea/
+dist/
+node_modules/
+
+# secrets / local config
+.env
+.env.local
+
+# IDE
 *.iml
+.idea/workspace.xml
+.idea/dataSources/
+.idea/dataSources.local.xml
+.idea/httpRequests/
 .vscode/
+
+# OS
 .DS_Store
+Thumbs.db
